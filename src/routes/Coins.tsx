@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import styled from "styled-components";
+import { isDarkAtom } from "../atoms";
 import { fetchCoins } from "./api";
 
 const Container = styled.div`
@@ -21,10 +23,11 @@ const Header = styled.header`
 const CoinsList = styled.ul``;
 
 const Coin = styled.li`
-  background-color: white;
-  color: ${(props) => props.theme.bgColor};
+  background-color: rgba(0, 0, 0, 0.5);
+  color: ${(props) => props.theme.textColor};
   margin-bottom: 10px;
   border-radius: 15px;
+  font-weight: 600;
   a {
     padding: 20px;
     transition: color 0.2s ease-in;
@@ -40,7 +43,8 @@ const Coin = styled.li`
 
 const Title = styled.h1`
   font-size: 48px;
-  color: ${(props) => props.theme.accentColor};
+  color: ${(props) => props.theme.textColor};
+  font-weight: 600;
 `;
 
 const Loader = styled.span`
@@ -53,6 +57,21 @@ const Img = styled.img`
   height: 35px;
   margin-right: 10px;
 `;
+
+const DarkModeBtn = styled.button`
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid ${(props) => props.theme.textColor};
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  color: ${(props) => props.theme.textColor};
+  background-color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  :hover {
+    color: ${(props) => props.theme.accentColor};
+  }
+`;
 interface ICoin {
   id: string;
   name: string;
@@ -62,7 +81,11 @@ interface ICoin {
   is_active: boolean;
   type: string;
 }
+
 const Coins = () => {
+  const isDark = useRecoilValue(isDarkAtom);
+  const setDarkAtom = useSetRecoilState(isDarkAtom);
+  const toggleDarkAtom = () => setDarkAtom((prev) => !prev);
   const { isLoading, data } = useQuery<ICoin[]>("allCoins", fetchCoins);
   //   const [coins, setCoins] = useState<ICoin[]>([]);
   //   const [loading, setLoading] = useState(true);
@@ -78,11 +101,14 @@ const Coins = () => {
   return (
     <Container>
       <Helmet>
-        <title>코인</title>
+        <title>Coin List</title>
       </Helmet>
       <Header>
-        <Title>코인</Title>
+        <Title>Coin List</Title>
       </Header>
+      <DarkModeBtn onClick={toggleDarkAtom}>
+        {isDark ? "Light Mode" : "Dark Mode"}
+      </DarkModeBtn>
       {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (

@@ -37,7 +37,7 @@ const Title = styled.h1`
   justify-content: center;
   align-items: center;
   img {
-    width: 45px;
+    height: 40px;
     margin-right: 5px;
   }
 `;
@@ -173,7 +173,6 @@ interface ITickersData {
     };
   };
 }
-
 function Coin() {
   const { coinId } = useParams();
   const { state } = useLocation() as ILocation;
