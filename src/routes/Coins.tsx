@@ -89,7 +89,7 @@ const Coins = () => {
         <CoinsList>
           {data?.slice(0, 100).map((coin) => (
             <Coin key={coin.id}>
-              <Link to={`/${coin.id}`} state={{ name: coin.name }}>
+              <Link to={`/${coin.id}/chart`} state={{ name: coin.name }}>
                 <Img
                   src={`https://cryptocurrencyliveprices.com/img/${coin.id}.png`}
                   alt="logo"

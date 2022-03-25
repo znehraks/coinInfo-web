@@ -7,13 +7,15 @@ import {
   Routes,
   useLocation,
   useMatch,
+  useNavigate,
   useParams,
 } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "./api";
 import Chart from "./Chart";
 import Price from "./Price";
-
+import LineChartImg from "../images/line.PNG";
+import CandleChartImg from "../images/candle.PNG";
 const Container = styled.div`
   padding: 0px 20px;
   max-width: 480px;
@@ -29,14 +31,34 @@ const Header = styled.header`
 
 const Title = styled.h1`
   font-size: 48px;
-  color: ${(props) => props.theme.accentColor};
+  color: ${(props) => props.theme.textColor};
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  img {
+    width: 45px;
+    margin-right: 5px;
+  }
 `;
 
 const Loader = styled.span`
   text-align: center;
   display: block;
 `;
-
+const GoBackBtn = styled.button`
+  font-size: 16px;
+  background-color: inherit;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  :hover {
+    color: ${(props) => props.theme.accentColor};
+  }
+`;
 const Overview = styled.div`
   display: flex;
   justify-content: space-between;
@@ -63,7 +85,7 @@ const Description = styled.p`
 `;
 const Tabs = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   margin: 25px 0px;
   gap: 10px;
 `;
@@ -82,7 +104,16 @@ const Tab = styled.span<{ isActive: boolean }>`
     display: block;
   }
 `;
-
+const ChartTabs = styled(Tabs)`
+  grid-template-columns: repeat(2, 1fr);
+`;
+const ChartTab = styled(Tab)`
+  font-size: 12px;
+  img {
+    width: 80%;
+    height: 50px;
+  }
+`;
 interface ILocation {
   state: {
     name: string;
@@ -146,8 +177,9 @@ interface ITickersData {
 function Coin() {
   const { coinId } = useParams();
   const { state } = useLocation() as ILocation;
-  const priceMatch = useMatch("/:coinId/price");
+  const navigate = useNavigate();
   const chartMatch = useMatch("/:coinId/chart");
+  const [chartStyle, setChartStyle] = useState("LINE");
   const { isLoading: infoLoading, data: infoData } = useQuery<IinfoData>(
     ["info", coinId!],
     () => fetchCoinInfo(coinId!)
@@ -188,6 +220,10 @@ function Coin() {
       </Helmet>
       <Header>
         <Title>
+          <img
+            src={`https://cryptocurrencyliveprices.com/img/${coinId}.png`}
+            alt="logo"
+          ></img>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
       </Header>
@@ -195,6 +231,7 @@ function Coin() {
         <Loader>Loading...</Loader>
       ) : (
         <>
+          <GoBackBtn onClick={() => navigate(-1)}>GoBack</GoBackBtn>
           <Overview>
             <OverviewItem>
               <span>Rank:</span>
@@ -220,17 +257,34 @@ function Coin() {
               <span>{tickersData?.max_supply}</span>
             </OverviewItem>
           </Overview>
-          <Tabs>
-            <Tab isActive={chartMatch !== null}>
-              <Link to={`/${coinId}/chart`}>Chart</Link>
-            </Tab>
-            <Tab isActive={priceMatch !== null}>
-              <Link to={`/${coinId}/price`}>Price</Link>
-            </Tab>
-          </Tabs>
+          <Tabs></Tabs>
+          {chartMatch !== null && (
+            <>
+              Chart Select
+              <ChartTabs>
+                <ChartTab
+                  isActive={chartStyle === "LINE"}
+                  onClick={() => setChartStyle("LINE")}
+                >
+                  LineChart
+                  <img src={LineChartImg} alt="line-chart"></img>
+                </ChartTab>
+                <ChartTab
+                  isActive={chartStyle === "CANDLE"}
+                  onClick={() => setChartStyle("CANDLE")}
+                >
+                  Candle
+                  <img src={CandleChartImg} alt="candle-chart"></img>
+                </ChartTab>
+              </ChartTabs>
+            </>
+          )}
           <Routes>
             <Route path={`price`} element={<Price />} />
-            <Route path={`chart`} element={<Chart coinId={coinId!} />} />
+            <Route
+              path={`chart`}
+              element={<Chart coinId={coinId!} chartStyle={chartStyle!} />}
+            />
           </Routes>
         </>
       )}
